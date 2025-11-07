@@ -135,19 +135,6 @@ def run_complexity_experiment(schedule_fn_dsu, schedule_fn_naive,
             std_n = float(np.std(times_n, ddof=0)) if _HAS_PLOTTING else ((max(times_n) - min(times_n)) / 2.0)
             measured_naive.append((n, mean_n, std_n))
             print(f"[NAIVE] n={n} mean={mean_n:.6f}s std={std_n:.6f}s")
-        else:
-            sample_n = 50000
-            times_n = []
-            for _ in range(trials):
-                items = generate_realistic_campus_events(sample_n, max_slots=max(1000, int(sample_n//10)))
-                t0 = time.perf_counter()
-                schedule_fn_naive([NewsItem(i+1, it.deadline, it.value, it.decay) for i, it in enumerate(items)])
-                t1 = time.perf_counter()
-                times_n.append(t1 - t0)
-            mean_n = float(np.mean(times_n)) if _HAS_PLOTTING else (sum(times_n) / len(times_n))
-            std_n = float(np.std(times_n, ddof=0)) if _HAS_PLOTTING else ((max(times_n) - min(times_n)) / 2.0)
-            measured_naive.append((n, mean_n, std_n))
-            print(f"[NAIVE-sampled] n={n} (sample {sample_n}) mean~{mean_n:.6f}s std~{std_n:.6f}s")
 
     # Fit DSU model mean ~ c * n log n
     xs = np.array([n * math.log(max(n, 2)) for n, _, _ in measured_dsu]) if _HAS_PLOTTING else []
@@ -303,7 +290,6 @@ def main():
         plot_from_csv(args.from_csv)
         return
 
-    # Default behavior: run complexity experiment (DSU + naive) and plot
     ns = [1000, 5000, 10000, 20000, 50000, 100000]
     run_complexity_experiment(schedule_news, schedule_news_naive, ns, trials=3)
 
